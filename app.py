@@ -3,7 +3,7 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def hello_semicolon():
+def ping():
     return 'Hello, Semicolon!'
 
 
