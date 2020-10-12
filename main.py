@@ -6,3 +6,9 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello, Semicolon!'
 
+
+@app.route('/ping')
+def hello_world():
+    return 'pong'
+
+
