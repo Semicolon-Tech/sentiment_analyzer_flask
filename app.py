@@ -1,3 +1,4 @@
+import json
 import joblib
 import sklearn
 
@@ -7,7 +8,9 @@ from flask import Flask, request
 # utilities
 from utils import clean_text
 
-app = Flask(__name__)
+
+from flask import Flask, jsonify, request
+from marshmallow import Schema, fields, ValidationError
 
 models = {
     "multinomial": {
@@ -25,12 +28,37 @@ models = {
 }
 
 
-@app.route('/predict', methods=["POST"])
-def predict():
-    # all the necessary parameters to select the right model
-    parameters = request.json
+class PredictSchema(Schema):
+    model = fields.String(required=True)
+    vectorizer = fields.String(required=True)
+    text = fields.String(required=True)
 
-    # the parameters to select model
+
+class PredictAllSchema(Schema):
+    text = fields.String(required=True)
+
+
+def validate(schema_class, controller, request_data):
+    # Get Request body from JSON
+    schema = schema_class()
+
+    try:
+        # Validate request body against schema data types
+        result = schema.load(request_data)
+
+    except ValidationError as err:
+        # Return a nice message if validation fails
+        return jsonify(err.messages), 400
+
+    # Convert request body back to JSON str
+    response_data = controller(result)
+
+    # Send data back as JSON
+    return jsonify(response_data), 200
+
+
+def predict(parameters: dict) -> str:
+    # all the necessary parameters to select the right mode
     model = parameters.pop("model")
     vectorizer = parameters.pop("vectorizer")
     text = parameters.pop("text")
@@ -43,12 +71,7 @@ def predict():
     return response
 
 
-@app.route('/predict_all', methods=["POST"])
-def predict_all():
-    # all the neccesary parameters to select the right model
-    parameters = request.json
-
-    # the parameters to selet model
+def predict_all(parameters: dict) -> dict:
     text = parameters.pop("text")
 
     # the final response to send back
@@ -63,6 +86,19 @@ def predict_all():
             response[model][vectorizer] = "positive" if y else "negative"
 
     return response
+
+
+app = Flask(__name__)
+
+
+@app.route('/predict', methods=["POST"])
+def predict_controller():
+    return validate(PredictSchema, predict, request.json)
+
+
+@app.route('/predict_all', methods=["POST"])
+def predict_all_controller():
+    return validate(PredictAllSchema, predict_all, request.json)
 
 
 @app.route('/ping')
