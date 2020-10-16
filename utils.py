@@ -1,8 +1,11 @@
 import string
 
+from sklearn.base import TransformerMixin
+
 import nltk
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
+
 
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -20,3 +23,18 @@ def clean_text(text: str) -> str:
     #lematize the words and join back into string text
     text = " ".join([wordnet_lemmatizer.lemmatize(word) for word in word_tokenize(text)])
     return text
+
+class DenseTransformer(TransformerMixin):
+    def fit(self, X, y=None, **fit_params):
+        return self
+
+    def transform(self, X, y=None, **fit_params):
+        return X.todense()
+    
+    def __str__(self):
+        return "DenseTransformer()"
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    

@@ -13,17 +13,25 @@ from flask import Flask, jsonify, request
 from marshmallow import Schema, fields, ValidationError
 
 models = {
-    "multinomial": {
-        "count": joblib.load("models/multinomial_naive_bayes_with_count_vectorizer.joblib"),
-        "tfidf": joblib.load("models/multinomial_naive_bayes_with_tfidf_vectorizer.joblib"),
-    },
     "bernoulli": {
         "count": joblib.load("models/bernoulli_naive_bayes_with_count_vectorizer.joblib"),
         "tfidf": joblib.load("models/bernoulli_naive_bayes_with_tfidf_vectorizer.joblib"),
     },
+
+    "categorical": {
+        "count": joblib.load("models/categorical_naive_bayes_with_count_vectorizer.joblib"),
+    },
     "complement": {
         "count": joblib.load("models/complement_naive_bayes_with_count_vectorizer.joblib"),
         "tfidf": joblib.load("models/complement_naive_bayes_with_tfidf_vectorizer.joblib"),
+    },
+    "gaussian": {
+        "count": joblib.load("models/gaussian_naive_bayes_with_count_vectorizer.joblib"),
+        "tfidf": joblib.load("models/gaussian_naive_bayes_with_tfidf_vectorizer.joblib"),
+    },
+    "multinomial": {
+        "count": joblib.load("models/multinomial_naive_bayes_with_count_vectorizer.joblib"),
+        "tfidf": joblib.load("models/multinomial_naive_bayes_with_tfidf_vectorizer.joblib"),
     },
 }
 
@@ -63,8 +71,12 @@ def predict(parameters: dict) -> str:
     vectorizer = parameters.pop("vectorizer")
     text = parameters.pop("text")
 
+    if model == "categorical" and vectorizer == "tfidf":
+        return jsonify(error="categorical does not  work with tfidf vectorizer"), 400
+
     x = [text]  # the input
-    y = models[model][vectorizer].predict(x)  # prediction
+    naive_bayes_model = models[model][vectorizer]
+    y = naive_bayes_model.predict(x)  # prediction
 
     # the final response to send back
     response = "positive" if y else "negative"
