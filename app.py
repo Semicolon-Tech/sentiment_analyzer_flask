@@ -62,7 +62,7 @@ def validate(schema_class, controller, request_data):
     response_data = controller(result)
 
     # Send data back as JSON
-    return jsonify(response_data), 200
+    return response_data, 200
 
 
 def predict(parameters: dict) -> str:
