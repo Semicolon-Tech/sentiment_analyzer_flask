@@ -1,14 +1,6 @@
 from functools import wraps
 
 import joblib
-# import sklearn
-#
-# import numpy as np
-#
-#
-# # utilities
-# from utils import clean_text
-
 from flask import Flask, jsonify, request
 from marshmallow import Schema, fields, ValidationError
 
