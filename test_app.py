@@ -1,6 +1,3 @@
-import os
-import tempfile
-
 import pytest
 
 from app import app
@@ -33,10 +30,10 @@ def test_predict_endpoint_get(client):
     assert response.status_code == 405
 
 
-def test_predict_endpoint_post_nojson(client):
+def test_predict_endpoint_post_no_json(client):
     # test invalid post
     response = client.post('/predict')
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 def test_predict_endpoint_post_valid_json(client):
@@ -47,8 +44,7 @@ def test_predict_endpoint_post_valid_json(client):
         "text": "it's a beautiful world"
     })
     assert response.status_code == 200
-    assert response.data in [b"positive", b"negative"]
-    assert isinstance(response.data, bytes)
+    assert response.json["output"] in ["positive", "negative"]
 
 
 def test_predict_all_endpoint_get(client):
@@ -58,20 +54,10 @@ def test_predict_all_endpoint_get(client):
     assert response.status_code == 405
 
 
-def test_predict_all_endpoint_post_nojson(client):
+def test_predict_all_endpoint_post_no_json(client):
     # test invalid post
     response = client.post('/predict_all')
-    assert response.status_code == 400
-
-
-def test_predict_all_endpoint_unnecessary_args(client):
-    # test post with unneccessary parameters
-    response = client.post('/predict_all', json={
-        "model": "multinomial",
-        "vectorizer": "count",
-        "text": "it's a beautiful world"
-    })
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 def test_predict_all_endpoint_post_invalid_json_key(client):
@@ -79,7 +65,7 @@ def test_predict_all_endpoint_post_invalid_json_key(client):
     response = client.post('/predict_all', json={
         "message": "it's a beautiful world"
     })
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 def test_predict_all_endpoint_invalid_json_value(client):
@@ -87,7 +73,7 @@ def test_predict_all_endpoint_invalid_json_value(client):
     response = client.post('/predict_all', json={
         "message": 1
     })
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 def test_predict_all_endpoint_valid_post(client):

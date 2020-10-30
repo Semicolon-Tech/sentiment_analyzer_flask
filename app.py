@@ -47,12 +47,12 @@ def validate_json(schema_class):
 
             try:
                 # Validate request body against schema data types
-                result = schema.load(request.json)
+                schema.load(request.json)
                 return f(*args, *kwargs)
 
             except ValidationError as err:
                 # Return a nice message if validation fails
-                return jsonify(err.messages), 400
+                return jsonify(err.messages), 422
 
         return decorated_function
     return decorator
@@ -79,7 +79,7 @@ def predict_controller():
     y = naive_bayes_model.predict(x)  # prediction
 
     # the final response to send back
-    response = "positive" if y else "negative"
+    response = {"output": "positive" if y else "negative"}
     return response
 
 
