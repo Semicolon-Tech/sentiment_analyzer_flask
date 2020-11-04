@@ -1,7 +1,10 @@
 from functools import wraps
 
 import joblib
+
+from flask_cors import CORS
 from flask import Flask, jsonify, request
+
 from marshmallow import Schema, fields, ValidationError
 
 models = {
@@ -57,9 +60,8 @@ def validate_json(schema_class):
         return decorated_function
     return decorator
 
-
 app = Flask(__name__)
-
+CORS(app)
 
 @app.route('/predict', methods=["POST"])
 @validate_json(schema_class=PredictSchema)
